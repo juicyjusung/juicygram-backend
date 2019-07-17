@@ -16,14 +16,27 @@ const app = express();
 passportConfig();
 
 db.sequelize.sync();
+app.set('port', process.env.PORT || 3265);
 
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'production') {
+  app.use(hpp());
+  app.use(helmet());
+  app.use(morgan('combined'));
+  app.use(cors({
+    origin: '배포 주소 여기에 넣기',
+  }));
+} else {
+  app.use(cors({
+    origin: true,
+    credentials: true,
+  }));
+  app.use(morgan('dev'));
+}
+
+app.use(express.static(path.join(__dirname, 'uploads')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
+
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(expressSession({
   resave: false,
@@ -41,10 +54,7 @@ app.use(passport.session());
 
 app.use('/api/user', userAPIRouter);
 
-app.get('/', (req, res) => {
-  res.send('hello');
-});
 
-app.listen(3265, () => {
+app.listen(app.get('port'), () => {
   console.log('server is running');
 });
