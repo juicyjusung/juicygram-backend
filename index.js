@@ -9,8 +9,7 @@ const path = require('path');
 
 const passportConfig = require('./passport');
 const db = require('./models');
-
-const userAPIRouter = require('./routes/user');
+const userAPIRouter = require('./routes/api/user');
 
 dotenv.config();
 const app = express();
