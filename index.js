@@ -4,13 +4,18 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const expressSession = require('express-session');
 const dotenv = require('dotenv');
+const passport = require('passport');
+const path = require('path');
 
+const passportConfig = require('./passport');
 const db = require('./models');
 
 const userAPIRouter = require('./routes/user');
 
 dotenv.config();
 const app = express();
+passportConfig();
+
 db.sequelize.sync();
 
 app.use(morgan('dev'));
@@ -31,6 +36,9 @@ app.use(expressSession({
   },
   name: 'juicyck'
 }));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/api/user', userAPIRouter);
 
