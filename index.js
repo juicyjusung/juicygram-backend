@@ -10,6 +10,8 @@ const path = require('path');
 const passportConfig = require('./passport');
 const db = require('./models');
 const userAPIRouter = require('./routes/api/user');
+const postAPIRouter = require('./routes/api/post');
+const commentAPIRouter = require('./routes/api/comment');
 
 dotenv.config();
 const app = express();
@@ -53,6 +55,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/api/user', userAPIRouter);
+app.use('/api/post', postAPIRouter);
+app.use('/api/comment', commentAPIRouter);
+
 
 
 app.listen(app.get('port'), () => {
