@@ -1,14 +1,16 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const passport = require('passport');
 const db = require('../../models');
 const { isLoggedIn, isNotLoggedIn } = require('../middleware');
-const passport = require('passport');
+
 const router = express.Router();
 
 router.get('/', isLoggedIn, (req, res) => {
   res.json(req.user);
 });
 
+// 회원가입 POST /api/user/signup
 router.post('/signup', isNotLoggedIn, async (req, res, next) => {
   console.log(req.body);
   try {
@@ -33,8 +35,8 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
   }
 });
 
+// 로그인 POST /api/user/login
 router.post('/login', isNotLoggedIn, async (req, res, next) => {
-  console.log(req.cookie);
   passport.authenticate('local', (err, user, info) => {
     if (err) {
       console.error(err);
@@ -74,11 +76,13 @@ router.post('/login', isNotLoggedIn, async (req, res, next) => {
         return res.json(fullUser);
       } catch (e) {
         console.error(e);
+        return next(e);
       }
     });
   })(req, res, next);
 });
 
+// 로그아웃 POST /api/user/logout
 router.post('/logout', isLoggedIn, async (req, res) => {
   await db.User.update({
     isOnline: false,
