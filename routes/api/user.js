@@ -7,7 +7,9 @@ const { isLoggedIn, isNotLoggedIn } = require('../middleware');
 const router = express.Router();
 
 router.get('/', isLoggedIn, (req, res) => {
-  res.json(req.user);
+  const user = Object.assign({}, req.user.toJSON());
+  delete user.password;
+  return res.json(user);
 });
 
 // 회원가입 POST /api/user/signup
@@ -89,9 +91,69 @@ router.post('/logout', isLoggedIn, async (req, res) => {
   }, {
     where: { id: req.session.passport.user },
   });
-  req.session.destroy();
   req.logout();
+  req.session.destroy();
   res.send('ok');
+});
+
+// 유저 팔로우 POST /api/user/:uid/follow
+router.post('/:uid/follow', isLoggedIn, async (req, res, next) => {
+  try {
+    const me = await db.User.findOne({
+      where: { id: req.user.id },
+    });
+    await me.addFollowing(req.params.uid);
+    return res.send(req.params.uid);
+  } catch (e) {
+    console.error(e);
+    return next(e);
+  }
+});
+
+// 유저 언팔로우 DELETE /api/user/:uid/follow
+router.delete('/:uid/follow', isLoggedIn, async (req, res, next) => {
+  try {
+    const me = await db.User.findOne({
+      where: { id: req.user.id },
+    });
+    me.removeFollowing(req.params.uid);
+    return res.send(req.params.uid);
+  } catch (e) {
+    console.error(e);
+    return next(e);
+  }
+});
+
+// 유저 팔로잉 목록 GET /api/user/:uid/followings
+router.get('/:uid/followings', isLoggedIn, async (req, res, next) => {
+  try {
+    const targetUser = await db.User.findOne({
+      where: { id: req.params.uid },
+    });
+    const followings = await targetUser.getFollowings({
+      attributes: ['id', 'username'],
+    });
+    return res.json(followings);
+  } catch (e) {
+    console.error(e);
+    return next(e);
+  }
+});
+
+// 유저 팔로워 목록 GET /api/user/:uid/followers
+router.get('/:uid/followers', isLoggedIn, async (req, res, next) => {
+  try {
+    const targetUser = await db.User.findOne({
+      where: { id: req.params.uid },
+    });
+    const followers = await targetUser.getFollowers({
+      attributes: ['id', 'username'],
+    });
+    return res.json(followers);
+  } catch (e) {
+    console.error(e);
+    return next(e);
+  }
 });
 
 module.exports = router;
