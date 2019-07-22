@@ -1,0 +1,152 @@
+############# USER ###########
+### Login
+POST http://{{host}}/api/user/login
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+> {%
+all_headers = response.headers.headers;
+for (i = 0; i < all_headers.length; i++) {
+    if ( all_headers[i].name === "Set-Cookie")
+    {
+        cookieStr=all_headers[i].value.split(";")[0];
+        cookieName=cookieStr.split("=")[0];
+        cookieValue=cookieStr.split("=")[1];
+        client.global.set( cookieName, cookieValue );
+    }
+}
+%}
+
+
+### Logout
+POST http://{{host}}/api/user/logout
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+
+### Signup
+POST http://{{host}}/api/user/signup
+Content-Type: application/json;charset=UTF-8
+
+{
+  "username": "juicyjusung6",
+  "email": "juicyjusung6@gmail.com",
+  "password": "juicyjusung6"
+}
+
+### get User(me) Info
+GET http://{{host}}/api/user/
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+### User Follow POST /api/user/:uid/follow
+POST http://{{host}}/api/user/4/follow
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+### User UnFollow DELETE /api/user/:uid/follow
+DELETE http://{{host}}/api/user/2/follow
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+### 해당유저 팔로잉목록 GET /api/user/:uid/followings
+GET http://{{host}}/api/user/1/followings
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+### 해당유저 팔로워목록 GET /api/user/:uid/followers
+GET http://{{host}}/api/user/1/followers
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+
+
+############## POST ##############
+
+### 포스트 작성 POST /api/post
+POST http://{{host}}/api/post
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+{
+  "content": "juicyjusung 가 작성한 글입니22다. #뉴태그 #해시태그"
+}
+
+### 포스트 가져오기 GET /api/post/:pid
+GET http://{{host}}/api/post/3
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+### 포스트 삭제하기
+DELETE http://{{host}}/api/post/7
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+### 포스트 수정하기
+PATCH http://{{host}}/api/post/3
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+{
+  "content": "변경된 게시글 #변경됨 #변경오잉"
+}
+
+### 포스트 좋아요 여부 체크 POST /api/post/:pid/liked-or-not
+POST http://{{host}}/api/post/3/liked-or-not
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+### 포스트 좋아요 POST /api/post/:pid/like
+POST http://{{host}}/api/post/4/like
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+### 포스트 좋아요취소 DELETE /api/post/:pid/like
+DELETE http://{{host}}/api/post/3/like
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+
+
+############## Comment ##############
+
+### 댓글 달기 POST /api/comment/:pid {"content"}
+POST http://{{host}}/api/comment/3
+Content-Type: application/json;charset=UTF-8
+Cookie: juicyck={{juicyck}}
+
+{
+  "content": "3번 게시글 juicy2의 댓글"
+}
+
+
+### GET /api/comment/:pid 해당 게시글 댓글들 가져오기
+GET http://{{host}}/api/comment/3
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+
+### 댓글 삭제 DELETE /api/comment/:pid
+DELETE http://{{host}}/api/comment/3
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+{
+  "commentId": "2"
+}
+
+### 댓글 수정 PATCH /api/comment/:pid
+PATCH http://{{host}}/api/comment/3
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+{
+  "commentId": "3",
+  "content": "변경된 댓글입니다"
+}
+
+
