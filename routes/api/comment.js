@@ -65,11 +65,13 @@ router.delete('/:pid', isLoggedIn, async (req, res, next) => {
       where: {
         id: req.body.commentId,
         postId: req.params.pid,
-        userId: req.user.id,
       },
     });
     if (!comment) {
       return res.status(404).send('존재하지 않는 댓글 입니다');
+    }
+    if (post.userId !== req.user.id) {
+      return res.status(405).send('사용자가 옳바르지 않습니다.');
     }
     comment.destroy();
     const comments = await db.Comment.findAll({
@@ -89,7 +91,7 @@ router.delete('/:pid', isLoggedIn, async (req, res, next) => {
   }
 });
 
-// 댓글 수정 DELETE /api/comment/:pid {"commentId", "content"}
+// 댓글 수정 PATCH /api/comment/:pid {"commentId"}
 router.patch('/:pid', isLoggedIn, async (req, res, next) => {
   try {
     const post = await db.Post.findOne({ where: { id: req.params.pid } });
