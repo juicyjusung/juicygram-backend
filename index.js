@@ -19,7 +19,8 @@ const app = express();
 passportConfig();
 
 db.sequelize.sync();
-app.set('port', process.env.PORT || 3265);
+app.set('port', process.env.NODE_ENV === 'production' ? process.env.PORT : 3265);
+
 
 if (process.env.NODE_ENV === 'production') {
   app.use(morgan('combined'));
@@ -64,5 +65,5 @@ app.use('/api/post', postAPIRouter);
 app.use('/api/comment', commentAPIRouter);
 
 app.listen(app.get('port'), () => {
-  console.log('server is running');
+  console.log(`server is running on ${app.get('port')}`);
 });
