@@ -1,11 +1,28 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+
 const db = require('../../models');
 const { isLoggedIn } = require('../middleware');
 
 const router = express.Router();
 
+const upload = multer({
+  storage: multer.diskStorage({
+    destination(req, file, done) {
+      done(null, 'uploads');
+    },
+    filename(req, file, done) {
+      const ext = path.extname(file.originalname);
+      const basename = path.basename(file.originalname, ext); // 제로초.png, ext===.png, basename===제로초
+      done(null, basename + new Date().valueOf() + ext);
+    },
+  }),
+  limits: { fileSize: 200 * 1024 * 1024 },
+});
+
 // 게시글 작성 POST /api/post
-router.post('/', isLoggedIn, async (req, res, next) => {
+router.post('/', isLoggedIn, upload.none(), async (req, res, next) => {
   try {
     const hashtags = req.body.content.match(/#[^\s]+/g);
     const newPost = await db.Post.create({
@@ -16,11 +33,19 @@ router.post('/', isLoggedIn, async (req, res, next) => {
       const result = await Promise.all(hashtags.map(tag => db.Hashtag.findOrCreate({
         where: { name: tag.slice(1).toLowerCase() },
       })));
-      await newPost.addHashtags(result.map((r) => {
-        return (r[0]);
-      }));
+      await newPost.addHashtags(result.map(r => (r[0])));
     }
-
+    if (req.body.image) { // 이미지 주소를 여러개 올리면 image: [주소1, 주소2]
+      if (Array.isArray(req.body.image)) {
+        const images = await Promise.all(req.body.image.map(
+          image => db.Image.create({ src: image }),
+        ));
+        await newPost.addImages(images);
+      } else { // 이미지를 하나만 올리면 image: 주소1
+        const image = await db.Image.create({ src: req.body.image });
+        await newPost.addImage(image);
+      }
+    }
     const post = await db.Post.findOne({
       where: { id: newPost.id },
       include: [
@@ -42,6 +67,16 @@ router.post('/', isLoggedIn, async (req, res, next) => {
     console.error(e);
     next(e);
   }
+});
+
+router.post('/images', upload.single('file'), (req, res) => {
+  const result = {
+    name: req.file.originalname,
+    status: 'done',
+    url: `http://localhost:3265/${req.file.filename}`,
+    thumbUrl: `http://localhost:3265/${req.file.filename}`,
+  };
+  return res.json(result);
 });
 
 // 게시글 가져오기 GET /api/post/:pid
@@ -128,6 +163,24 @@ router.delete('/:pid', isLoggedIn, async (req, res, next) => {
     }
     await post.destroy();
     return res.send('게시글이 삭제되었습니다.');
+  } catch (e) {
+    console.error(e);
+    return next(e);
+  }
+});
+
+// 게시글 좋아요 여부 POST /api/post/:pid/liked-or-not
+router.post('/:pid/liked-or-not', isLoggedIn, async (req, res, next) => {
+  try {
+    const post = await db.Post.findOne({ where: { id: req.params.pid } });
+    if (!post) {
+      return res.status(404).send('존재하지 않는 포스트 입니다');
+    }
+    const likers = await post.getLikers().filter(v => v.id === req.user.id);
+    if (!likers.length) {
+      return res.send(false);
+    }
+    return res.send(true);
   } catch (e) {
     console.error(e);
     return next(e);
