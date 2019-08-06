@@ -19,7 +19,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
     const exUser = await db.User.findOne({
       where: {
         username: req.body.username,
-      }
+      },
     });
     if (exUser) {
       return res.status(403).send('이미 사용중인 아이디 입니다.');

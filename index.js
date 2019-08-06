@@ -25,7 +25,7 @@ app.set('port', process.env.NODE_ENV === 'production' ? process.env.PORT : 3265)
 if (process.env.NODE_ENV === 'production') {
   app.use(morgan('combined'));
   app.use(cors({
-    origin: '배포 주소 여기에 넣기',
+    origin: 'http://13.125.61.26',
   }));
 } else {
   app.use(cors({

@@ -92,7 +92,7 @@ router.get('/:pid', isLoggedIn, async (req, res, next) => {
       }, {
         model: db.User,
         as: 'likers',
-        attributes: ['id', 'username']
+        attributes: ['id', 'username'],
       }],
     });
     res.json(post);
