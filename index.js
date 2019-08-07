@@ -26,6 +26,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(morgan('combined'));
   app.use(cors({
     origin: 'http://13.125.61.26',
+    credentials: true,
   }));
 } else {
   app.use(cors({

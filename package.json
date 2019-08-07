@@ -4,7 +4,7 @@
   "description": "juicygram backend",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon",
+    "dev": "cross-env PORT=80 nodemon",
     "start": "cross-env NODE_ENV=production PORT=80 pm2 start index.js && pm2 monit"
   },
   "keywords": [
