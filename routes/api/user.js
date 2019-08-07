@@ -45,6 +45,7 @@ router.post('/login', isNotLoggedIn, async (req, res, next) => {
       return next(err);
     }
     if (info) {
+      console.log('info 있음', info);
       return res.status(401).json(info);
     }
     return req.login(user, async (loginErr) => {
