@@ -1,21 +1,26 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const AWS = require('aws-sdk');
+const multerS3 = require('multer-s3');
 
 const db = require('../../models');
 const { isLoggedIn } = require('../middleware');
 
 const router = express.Router();
 
+AWS.config.update({
+  region: 'ap-northeast-2',
+  accessKeyId: process.env.S3_ACCESS_KEY_ID,
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+});
+
 const upload = multer({
-  storage: multer.diskStorage({
-    destination(req, file, done) {
-      done(null, 'uploads');
-    },
-    filename(req, file, done) {
-      const ext = path.extname(file.originalname);
-      const basename = path.basename(file.originalname, ext); // 제로초.png, ext===.png, basename===제로초
-      done(null, basename + new Date().valueOf() + ext);
+  storage: multerS3({
+    s3: new AWS.S3(),
+    bucket: 'juicygram',
+    key(req, file, cb) {
+      cb(null, `origin/${+new Date()}${path.basename(file.originalname)}`);
     },
   }),
   limits: { fileSize: 200 * 1024 * 1024 },
@@ -38,13 +43,13 @@ router.post('/', isLoggedIn, upload.none(), async (req, res, next) => {
       })));
       await newPost.addHashtags(result.map(r => (r[0])));
     }
-    if (req.body.image) { // 이미지 주소를 여러개 올리면 image: [주소1, 주소2]
+    if (req.body.image) {
       if (Array.isArray(req.body.image)) {
         const images = await Promise.all(req.body.image.map(
           image => db.Image.create({ src: image }),
         ));
         await newPost.addImages(images);
-      } else { // 이미지를 하나만 올리면 image: 주소1
+      } else {
         const image = await db.Image.create({ src: req.body.image });
         await newPost.addImage(image);
       }
@@ -72,14 +77,9 @@ router.post('/', isLoggedIn, upload.none(), async (req, res, next) => {
   }
 });
 
-router.post('/images', upload.single('file'), (req, res) => {
-  const result = {
-    name: req.file.originalname,
-    status: 'done',
-    url: `http://localhost:3265/${req.file.filename}`,
-    thumbUrl: `http://localhost:3265/${req.file.filename}`,
-  };
-  return res.json(result);
+router.post('/images', upload.array('file'), (req, res) => {
+  console.log('req.files : ', req.files);
+  return res.json(req.files);
 });
 
 // 게시글 가져오기 GET /api/post
