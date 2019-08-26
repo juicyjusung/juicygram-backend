@@ -222,6 +222,31 @@ router.delete('/:pid', isLoggedIn, async (req, res, next) => {
   }
 });
 
+// 댓글 가져오기 GET /api/post/:pid/comments
+router.get('/:pid/comments', isLoggedIn, async (req, res, next) => {
+  try {
+    const post = await db.Post.findOne({ where: { id: req.params.pid } });
+    if (!post) {
+      return res.status(404)
+        .send('존재하지 않는 포스트 입니다');
+    }
+    const comments = await db.Comment.findAll({
+      where: {
+        postId: post.id,
+      },
+      order: [['createdAt', 'ASC']],
+      include: [{
+        model: db.User,
+        attributes: ['id', 'username', 'avatarUrl'],
+      }],
+    });
+    return res.json(comments);
+  } catch (e) {
+    console.error(e);
+    return next(e);
+  }
+});
+
 // 게시글 좋아요 여부 POST /api/post/:pid/liked-or-not
 router.post('/:pid/liked-or-not', isLoggedIn, async (req, res, next) => {
   try {
