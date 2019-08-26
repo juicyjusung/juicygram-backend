@@ -276,7 +276,7 @@ router.post('/:pid/like', isLoggedIn, async (req, res, next) => {
         .send('존재하지 않는 포스트 입니다');
     }
     await post.addLiker(req.user.id);
-    return res.json({ userId: req.user.id });
+    return res.json({ userId: req.user.id, postId: post.id });
   } catch (e) {
     console.error(e);
     return next(e);
@@ -284,7 +284,7 @@ router.post('/:pid/like', isLoggedIn, async (req, res, next) => {
 });
 
 // 게시글 좋아요 취소 POST /api/post/:pid/like
-router.delete('/:pid/like', isLoggedIn, async (req, res, next) => {
+router.post('/:pid/unlike', isLoggedIn, async (req, res, next) => {
   try {
     const post = await db.Post.findOne({ where: { id: req.params.pid } });
     if (!post) {
@@ -292,7 +292,7 @@ router.delete('/:pid/like', isLoggedIn, async (req, res, next) => {
         .send('존재하지 않는 포스트 입니다');
     }
     await post.removeLiker(req.user.id);
-    return res.json({ userId: req.user.id });
+    return res.json({ userId: req.user.id, postId: post.id });
   } catch (e) {
     console.error(e);
     return next(e);
