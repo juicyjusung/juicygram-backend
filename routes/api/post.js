@@ -247,6 +247,36 @@ router.get('/:pid/comments', isLoggedIn, async (req, res, next) => {
   }
 });
 
+// 댓글 작성하기 POST /api/post/:pid/comment
+router.post('/:pid/comment', isLoggedIn, async (req, res, next) => {
+  try {
+    const post = await db.Post.findOne({ where: { id: req.params.pid } });
+    if (!post) {
+      return res.status(404)
+        .send('존재하지 않는 포스트 입니다');
+    }
+    const newComment = await db.Comment.create({
+      postId: post.id,
+      userId: req.user.id,
+      content: req.body.content,
+    });
+    await post.addComment(newComment.id);
+    const comment = await db.Comment.findOne({
+      where: {
+        id: newComment.id,
+      },
+      include: [{
+        model: db.User,
+        attributes: ['id', 'username'],
+      }],
+    });
+    return res.json(comment);
+  } catch (e) {
+    console.error(e);
+    return next(e);
+  }
+});
+
 // 게시글 좋아요 여부 POST /api/post/:pid/liked-or-not
 router.post('/:pid/liked-or-not', isLoggedIn, async (req, res, next) => {
   try {
