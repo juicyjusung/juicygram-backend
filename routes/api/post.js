@@ -90,9 +90,8 @@ router.get('/', isLoggedIn, async (req, res, next) => {
       where: { id: req.user.id },
     });
     const followings = await targetUser.getFollowings({
-      attributes: ['id', 'username'],
+      attributes: ['id'],
     });
-
     if (parseInt(req.query.lastId, 10)) {
       where = {
         id: {
@@ -100,10 +99,14 @@ router.get('/', isLoggedIn, async (req, res, next) => {
         },
       };
     }
+    const list = [];
+    followings.forEach(v => list.push(v.id));
+    list.push(req.user.id);
     const posts = await db.Post.findAll({
       where: {
         ...where,
-        userId: { [db.Sequelize.Op.or]: Object.keys(followings) },
+        // userId: { [db.Sequelize.Op.or]: Object.keys(followings) },
+        userId: list,
       },
       include: [{
         model: db.User,
