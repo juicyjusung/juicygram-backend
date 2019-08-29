@@ -14,7 +14,6 @@ router.get('/', isLoggedIn, (req, res) => {
 
 // 회원가입 POST /api/user/signup
 router.post('/signup', isNotLoggedIn, async (req, res, next) => {
-  console.log(req.body);
   try {
     const exUser = await db.User.findOne({
       where: {
@@ -45,7 +44,6 @@ router.post('/login', isNotLoggedIn, async (req, res, next) => {
       return next(err);
     }
     if (info) {
-      console.log('info 있음', info);
       return res.status(401).json(info);
     }
     return req.login(user, async (loginErr) => {
@@ -68,11 +66,11 @@ router.post('/login', isNotLoggedIn, async (req, res, next) => {
           }, {
             model: db.User,
             as: 'followers',
-            attributes: ['id'],
+            attributes: ['id', 'username'],
           }, {
             model: db.User,
             as: 'followings',
-            attributes: ['id'],
+            attributes: ['id', 'username'],
           }],
           attributes: ['id', 'username', 'email', 'avatar_url', 'status_message', 'is_online'],
         });
@@ -129,10 +127,10 @@ router.delete('/:uid/follow', isLoggedIn, async (req, res, next) => {
 router.get('/:uid/followings', isLoggedIn, async (req, res, next) => {
   try {
     const targetUser = await db.User.findOne({
-      where: { id: req.params.uid },
+      where: { id: parseInt(req.params.id, 10) || (req.user && req.user.id) || 0 },
     });
     const followings = await targetUser.getFollowings({
-      attributes: ['id', 'username'],
+      attributes: ['id', 'username', 'avatar_url'],
     });
     return res.json(followings);
   } catch (e) {
@@ -145,10 +143,10 @@ router.get('/:uid/followings', isLoggedIn, async (req, res, next) => {
 router.get('/:uid/followers', isLoggedIn, async (req, res, next) => {
   try {
     const targetUser = await db.User.findOne({
-      where: { id: req.params.uid },
+      where: { id: parseInt(req.params.id, 10) || (req.user && req.user.id) || 0 },
     });
     const followers = await targetUser.getFollowers({
-      attributes: ['id', 'username'],
+      attributes: ['id', 'username', 'avatar_url'],
     });
     return res.json(followers);
   } catch (e) {
