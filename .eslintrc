@@ -19,6 +19,7 @@
     "comma-dangle": 1,
     "import/newline-after-import": 1,
     "no-use-before-define": 1,
+    "linebreak-style": 0,
     "no-console": [
       "warn",
       {
