@@ -20,7 +20,7 @@ const upload = multer({
     s3: new AWS.S3(),
     bucket: 'juicygram',
     key(req, file, cb) {
-      cb(null, `origin/${+new Date()}${path.basename(file.originalname)}`);
+      cb(null, `origin/post/${+new Date()}${path.basename(file.originalname)}`);
     },
   }),
   limits: { fileSize: 200 * 1024 * 1024 },
@@ -77,6 +77,7 @@ router.post('/', isLoggedIn, upload.none(), async (req, res, next) => {
   }
 });
 
+// 이미지 업로드 POST /api/post/images
 router.post('/images', upload.array('file'), (req, res) => {
   console.log('req.files : ', req.files);
   return res.json(req.files);
