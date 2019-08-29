@@ -1,10 +1,31 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const passport = require('passport');
+const path = require('path');
+const AWS = require('aws-sdk');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
 const db = require('../../models');
 const { isLoggedIn, isNotLoggedIn } = require('../middleware');
 
 const router = express.Router();
+
+AWS.config.update({
+  region: 'ap-northeast-2',
+  accessKeyId: process.env.S3_ACCESS_KEY_ID,
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+});
+
+const upload = multer({
+  storage: multerS3({
+    s3: new AWS.S3(),
+    bucket: 'juicygram',
+    key(req, file, cb) {
+      cb(null, `origin/profile/${+new Date()}${path.basename(file.originalname)}`);
+    },
+  }),
+  limits: { fileSize: 200 * 1024 * 1024 },
+});
 
 router.get('/', isLoggedIn, (req, res) => {
   const user = Object.assign({}, req.user.toJSON());
@@ -30,6 +51,23 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
       email: req.body.email,
     });
     return res.json(newUser);
+  } catch (e) {
+    console.error(e);
+    return next(e);
+  }
+});
+
+// 프로필 이미지 업로드 POST /api/user/profileimage
+router.post('/profileimage', isLoggedIn, upload.single('file'), async (req, res, next) => {
+  try {
+    const url = req.file.location;
+    const me = await db.User.findOne({
+      where: { id: req.user.id },
+    });
+    me.update({
+      avatarUrl: url,
+    });
+    return res.json(req.file);
   } catch (e) {
     console.error(e);
     return next(e);
