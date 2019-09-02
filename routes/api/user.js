@@ -141,7 +141,7 @@ router.post('/login', isNotLoggedIn, async (req, res, next) => {
             as: 'followings',
             attributes: ['id', 'username'],
           }],
-          attributes: ['id', 'username', 'email', 'avatar_url', 'status_message', 'is_online'],
+          attributes: ['id', 'username', 'email', 'avatarUrl', 'status_message', 'is_online'],
         });
         return res.json(fullUser);
       } catch (e) {
