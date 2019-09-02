@@ -33,6 +33,37 @@ router.get('/', isLoggedIn, (req, res) => {
   return res.json(user);
 });
 
+// 회원정보 가져오기 GET /api/user/:username
+router.get('/:username', isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await db.User.findOne({
+      where: { username: req.params.username },
+      include: [{
+        model: db.Post,
+        as: 'posts',
+        attributes: ['id'],
+      }, {
+        model: db.User,
+        as: 'followings',
+        attributes: ['id'],
+      }, {
+        model: db.User,
+        as: 'followers',
+        attributes: ['id'],
+      }],
+      attributes: ['id', 'username', 'avatarUrl'],
+    });
+    const jsonUser = user.toJSON();
+    jsonUser.Posts = jsonUser.Posts ? jsonUser.Posts.length : 0;
+    jsonUser.Followings = jsonUser.Followings ? jsonUser.Followings.length : 0;
+    jsonUser.Followers = jsonUser.Followers ? jsonUser.Followers.length : 0;
+    res.json(jsonUser);
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+});
+
 // 회원가입 POST /api/user/signup
 router.post('/signup', isNotLoggedIn, async (req, res, next) => {
   try {
