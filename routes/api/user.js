@@ -40,8 +40,15 @@ router.get('/:username', isLoggedIn, async (req, res, next) => {
       where: { username: req.params.username },
       include: [{
         model: db.Post,
+        include: [
+          db.Image,
+          db.Comment,
+          {
+            model: db.User,
+            as: 'likers',
+          },
+        ],
         as: 'posts',
-        attributes: ['id'],
       }, {
         model: db.User,
         as: 'followings',
@@ -51,12 +58,13 @@ router.get('/:username', isLoggedIn, async (req, res, next) => {
         as: 'followers',
         attributes: ['id'],
       }],
-      attributes: ['id', 'username', 'avatarUrl'],
+      attributes: ['id', 'username', 'avatarUrl', 'statusMessage'],
+      order: [[{ model: db.Post, as: 'posts' }, 'createdAt', 'DESC']],
     });
     const jsonUser = user.toJSON();
-    jsonUser.Posts = jsonUser.Posts ? jsonUser.Posts.length : 0;
-    jsonUser.Followings = jsonUser.Followings ? jsonUser.Followings.length : 0;
-    jsonUser.Followers = jsonUser.Followers ? jsonUser.Followers.length : 0;
+    jsonUser.Posts = jsonUser.posts ? jsonUser.posts.length : 0;
+    jsonUser.Followings = jsonUser.followings ? jsonUser.followings.length : 0;
+    jsonUser.Followers = jsonUser.followers ? jsonUser.followers.length : 0;
     res.json(jsonUser);
   } catch (e) {
     console.error(e);
