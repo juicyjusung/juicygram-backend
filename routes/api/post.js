@@ -209,7 +209,7 @@ router.patch('/:pid', isLoggedIn, async (req, res, next) => {
 // 게시글 삭제하기 DELETE /api/post/:pid
 router.delete('/:pid', isLoggedIn, async (req, res, next) => {
   try {
-    const post = await db.Post.findOne({ where: { id: req.params.pid } });
+    const post = await db.Post.findOne({ where: { id: req.params.pid, userId: req.user.id } });
     if (!post) {
       return res.status(404)
         .send('존재하지 않는 포스트 입니다');
