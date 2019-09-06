@@ -96,6 +96,23 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
   }
 });
 
+// 회원 정보 수정
+router.patch('/', isLoggedIn, async (req, res, next) => {
+  try {
+    const me = await db.User.findOne({
+      where: { id: req.user.id },
+    });
+    await me.update({
+      username: req.body.username,
+      statusMessage: req.body.statusMessage,
+    });
+    return res.send('변경 완료');
+  } catch (e) {
+    console.error(e);
+    return next(e);
+  }
+});
+
 // 프로필 이미지 업로드 POST /api/user/profileimage
 router.post('/profileimage', isLoggedIn, upload.single('file'), async (req, res, next) => {
   try {
