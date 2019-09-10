@@ -63,6 +63,12 @@ GET http://{{host}}/api/user/1/followers
 Cookie: juicyck={{juicyck}}
 Content-Type: application/json;charset=UTF-8
 
+### 추천목록 GET /api/user/recommend
+GET http://{{host}}/api/user/recommend
+Cookie: juicyck={{juicyck}}
+Content-Type: application/json;charset=UTF-8
+
+
 
 
 ############## POST ##############
@@ -148,5 +154,3 @@ Content-Type: application/json;charset=UTF-8
   "commentId": "3",
   "content": "변경된 댓글입니다"
 }
-
-
