@@ -33,6 +33,32 @@ router.get('/', isLoggedIn, (req, res) => {
   return res.json(user);
 });
 
+// 유저 추천 목록 GET /api/user/recommend
+router.get('/recommend', isLoggedIn, async (req, res, next) => {
+  try {
+    const targetUser = await db.User.findOne({
+      where: { id: parseInt(req.params.id, 10) || (req.user && req.user.id) || 0 },
+    });
+    const followingsId = await targetUser.getFollowings({
+      attributes: ['id'],
+    }).map(v => v.id);
+    const recommendUserList = await db.User.findAll({
+      limit: 5,
+      order: [db.sequelize.random()],
+      where: {
+        id: {
+          [db.Sequelize.Op.notIn]: [...followingsId, targetUser.id],
+        },
+      },
+      attributes: ['id', 'username', 'avatar_url'],
+    });
+    return res.json(recommendUserList);
+  } catch (e) {
+    console.error(e);
+    return next(e);
+  }
+});
+
 // 회원정보 가져오기 GET /api/user/:username
 router.get('/:username', isLoggedIn, async (req, res, next) => {
   try {
@@ -248,5 +274,6 @@ router.get('/:uid/followers', isLoggedIn, async (req, res, next) => {
     return next(e);
   }
 });
+
 
 module.exports = router;
