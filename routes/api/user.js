@@ -50,7 +50,7 @@ router.get('/recommend', isLoggedIn, async (req, res, next) => {
           [db.Sequelize.Op.notIn]: [...followingsId, targetUser.id],
         },
       },
-      attributes: ['id', 'username', 'avatar_url'],
+      attributes: ['id', 'username', 'avatar_url', 'status_message'],
     });
     return res.json(recommendUserList);
   } catch (e) {
