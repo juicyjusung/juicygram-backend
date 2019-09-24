@@ -24,7 +24,7 @@ app.set('port', process.env.NODE_ENV === 'production' ? process.env.PORT : 80);
 if (process.env.NODE_ENV === 'production') {
   app.use(morgan('combined'));
   app.use(cors({
-    origin: 'http://13.125.61.26',
+    origin: 'http://34.97.37.213:3000',
     credentials: true,
   }));
 } else {
